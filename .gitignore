@@ -1,0 +1,6 @@
+# Claude Code project guidance — keep local only, do not share on GitHub
+CLAUDE.md
+
+# Python cache files — auto-generated, not needed in the repo
+__pycache__/
+*.pyc
