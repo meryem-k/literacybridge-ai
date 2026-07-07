@@ -3,74 +3,90 @@ import os
 import streamlit as st
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from data.passages import PASSAGE
+from data.passages import PASSAGES
 
 st.set_page_config(page_title="Reading Practice", page_icon="📖")
 
 st.title("📖 Reading Practice")
-st.markdown("Read the passage carefully. Then answer the questions below.")
+st.markdown("Choose a passage, read it carefully, then answer the STAAR-style questions.")
+
+# --- Passage Selector ---
+passage_options = {f"{p['genre']}: \"{p['title']}\"": p for p in PASSAGES}
+selected_label = st.selectbox("Select a passage to practice:", list(passage_options.keys()))
+passage = passage_options[selected_label]
+
+# Use passage id in session state keys so switching passages resets the quiz
+pid = passage["id"]
+
+st.divider()
 
 # --- Reading Passage ---
-with st.expander(f'📄 Click to read the passage: **"{PASSAGE["title"]}"**', expanded=True):
-    st.markdown(PASSAGE["text"])
+with st.expander(f'📄 Read the passage: **"{passage["title"]}"**', expanded=True):
+    st.caption(f"Genre: {passage['genre']}")
+    st.markdown(passage["text"])
 
 st.divider()
 st.subheader("Answer the Questions")
 st.caption("Choose the best answer for each question. Submit when you are finished.")
 
-# Initialize session state to remember answers and whether the student submitted
-if "reading_submitted" not in st.session_state:
-    st.session_state.reading_submitted = False
-if "reading_answers" not in st.session_state:
-    st.session_state.reading_answers = {}
+# Session state keys are passage-specific so switching resets everything cleanly
+submitted_key = f"submitted_{pid}"
+answers_key   = f"answers_{pid}"
 
-# Show each question with radio buttons
+if submitted_key not in st.session_state:
+    st.session_state[submitted_key] = False
+if answers_key not in st.session_state:
+    st.session_state[answers_key] = {}
+
+# --- Questions ---
 answers = {}
-for q in PASSAGE["questions"]:
-    st.markdown(f"**Question {q['id']}:** {q['question']}")
+for q in passage["questions"]:
+    st.markdown(f"**Question {q['id']}** — *{q['skill']}*")
+    st.markdown(f"**{q['question']}**")
     answer = st.radio(
         label=f"Answer for Question {q['id']}",
         options=q["options"],
         index=None,
-        key=f"q{q['id']}",
+        key=f"p{pid}_q{q['id']}",
         label_visibility="collapsed",
     )
     answers[q["id"]] = answer
     st.markdown("")
 
-# Submit button — only show if not yet submitted
-if not st.session_state.reading_submitted:
+# --- Submit ---
+if not st.session_state[submitted_key]:
     if st.button("Submit Answers", type="primary"):
         if None in answers.values():
             st.warning("Please answer all questions before submitting.")
         else:
-            st.session_state.reading_answers = answers
-            st.session_state.reading_submitted = True
+            st.session_state[answers_key] = answers
+            st.session_state[submitted_key] = True
             st.rerun()
 
-# --- Results Section ---
-if st.session_state.reading_submitted:
+# --- Results ---
+if st.session_state[submitted_key]:
     st.divider()
     st.subheader("Your Results")
 
     score = 0
-    for q in PASSAGE["questions"]:
-        user_answer = st.session_state.reading_answers.get(q["id"])
+    for q in passage["questions"]:
+        user_answer    = st.session_state[answers_key].get(q["id"])
         correct_answer = q["options"][q["correct"]]
-        is_correct = user_answer == correct_answer
+        is_correct     = user_answer == correct_answer
 
         if is_correct:
             score += 1
-            st.success(f"✅ Question {q['id']}: Correct!")
+            st.success(f"✅ Question {q['id']}: Correct!  |  *{q['skill']}*")
         else:
-            st.error(f"❌ Question {q['id']}: Incorrect — The correct answer is: **{correct_answer}**")
+            st.error(f"❌ Question {q['id']}: Incorrect  |  *{q['skill']}*\n\n**Correct answer:** {correct_answer}")
 
         with st.expander(f"See explanation for Question {q['id']}"):
             st.write(q["explanation"])
 
     st.divider()
-    percentage = int((score / len(PASSAGE["questions"])) * 100)
-    st.metric("Your Score", f"{score} / {len(PASSAGE['questions'])}", f"{percentage}%")
+    total      = len(passage["questions"])
+    percentage = int((score / total) * 100)
+    st.metric("Your Score", f"{score} / {total}", f"{percentage}%")
 
     if percentage == 100:
         st.balloons()
@@ -83,10 +99,10 @@ if st.session_state.reading_submitted:
         st.warning("Keep practicing! Read the explanations carefully and ask your teacher for help.")
 
     if st.button("Try Again"):
-        st.session_state.reading_submitted = False
-        st.session_state.reading_answers = {}
-        for q in PASSAGE["questions"]:
-            key = f"q{q['id']}"
+        st.session_state[submitted_key] = False
+        st.session_state[answers_key]   = {}
+        for q in passage["questions"]:
+            key = f"p{pid}_q{q['id']}"
             if key in st.session_state:
                 del st.session_state[key]
         st.rerun()

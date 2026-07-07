@@ -59,4 +59,67 @@ EXERCISES = [
         "correct": 1,
         "explanation": 'The word "yesterday" tells us the action happened in the past. Both verbs must use past tense: "walked" and "stopped." A sentence should not mix past and present tense without a reason.',
     },
+    # --- New exercises: Revising skills ---
+    {
+        "id": 5,
+        "type": "Revising",
+        "skill": "Removing Irrelevant Information",
+        "instruction": "A student wrote this paragraph. One sentence does NOT support the paragraph's main idea. Choose the sentence that should be removed.",
+        "sentence": "(1) Getting enough sleep is essential for high school students to perform well academically. (2) Studies show that students who sleep fewer than eight hours have lower grades and difficulty concentrating. (3) Many students enjoy staying up late to watch videos or play video games. (4) Without adequate sleep, the brain cannot effectively store information learned during the school day.",
+        "options": [
+            "Sentence 1 — Getting enough sleep is essential for high school students to perform well academically.",
+            "Sentence 2 — Studies show that students who sleep fewer than eight hours have lower grades.",
+            "Sentence 3 — Many students enjoy staying up late to watch videos or play video games.",
+            "Sentence 4 — Without adequate sleep, the brain cannot effectively store information.",
+        ],
+        "correct": 2,
+        "explanation": 'A relevant sentence must directly support the paragraph\'s main idea, which is that sleep affects academic performance. Sentence 3 describes a behavior (staying up late) but does not explain WHY sleep matters for school. It goes off topic and should be removed. Every sentence in a paragraph should support the controlling idea.',
+    },
+    {
+        "id": 6,
+        "type": "Revising",
+        "skill": "Strengthening a Thesis Statement",
+        "instruction": "A student wrote this opening sentence for an argumentative essay: \"Sleep is something that people need.\" Which revision BEST improves this as a thesis statement for an argumentative essay?",
+        "sentence": "Original thesis: \"Sleep is something that people need.\"",
+        "options": [
+            "Sleep is something that people have always needed throughout all of human history.",
+            "High school start times should be moved to 8:30 a.m. or later to protect adolescent health and improve academic performance.",
+            "Many people in America do not get enough sleep every single night of the week.",
+            "Sleep can be difficult for some people but comes easily to others depending on the person.",
+        ],
+        "correct": 1,
+        "explanation": 'A strong thesis for an argumentative essay must do two things: (1) state a clear position and (2) tell the reader what the essay will argue. Option B does both — it takes a specific position (start times should be later) and gives a reason (to protect health and improve performance). The other options make general statements but do not argue a debatable claim.',
+    },
+
+    # --- New exercises: Editing skills ---
+    {
+        "id": 7,
+        "type": "Editing",
+        "skill": "Capitalization of Proper Nouns",
+        "instruction": "Choose the answer that corrects the capitalization error in the sentence below.",
+        "sentence": "Elena practiced her audition song every night before the lincoln high school choir tryouts.",
+        "options": [
+            "Elena practiced her audition song every night before the lincoln high school choir tryouts. (no change)",
+            "Elena practiced her audition song every night before the Lincoln High school choir tryouts.",
+            "Elena practiced her audition song every night before the Lincoln High School choir tryouts.",
+            "elena practiced her audition song every night before the Lincoln High School choir tryouts.",
+        ],
+        "correct": 2,
+        "explanation": 'Proper nouns — the official names of specific people, places, schools, and organizations — must always be capitalized. "Lincoln High School" is the full, official name of a school, so every word in that name is capitalized. "choir tryouts" is not a proper noun, so it stays lowercase.',
+    },
+    {
+        "id": 8,
+        "type": "Editing",
+        "skill": "Pronoun Case",
+        "instruction": "Choose the answer that corrects the pronoun error in the sentence below.",
+        "sentence": "After the audition ended, her and Ms. Park spoke briefly about the choir's upcoming schedule.",
+        "options": [
+            "After the audition ended, her and Ms. Park spoke briefly about the choir's upcoming schedule. (no change)",
+            "After the audition ended, she and Ms. Park spoke briefly about the choir's upcoming schedule.",
+            "After the audition ended, hers and Ms. Park spoke briefly about the choir's upcoming schedule.",
+            "After the audition ended, herself and Ms. Park spoke briefly about the choir's upcoming schedule.",
+        ],
+        "correct": 1,
+        "explanation": '"Her" is an object pronoun (used after a verb or preposition). Here, the pronoun is the subject — it is doing the action ("spoke"). Subject pronouns are: I, he, she, they, we. A quick test: remove the other person and read the sentence alone. "Her spoke" is wrong. "She spoke" is correct. Always use a subject pronoun when the pronoun performs the action.',
+    },
 ]
