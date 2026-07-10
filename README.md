@@ -85,8 +85,9 @@ The app opens in your browser at `http://localhost:8501`.
 
 This is an active prototype under development. It is not yet a production system. Features, content, and design are evolving as the project grows toward its full vision.
 
-**Current phase:** Phase 1 complete — content depth (passages, vocabulary, exercises)
-**Next phase:** Phase 2 — student experience improvements
+**Phase 1 complete:** Content depth (passages, vocabulary, exercises)
+**Phase 2 complete:** Writing practice improvements — ACE/RACE scaffolding, sentence stems, skill feedback, personalized recommendations, teacher writing skill gap chart
+**Next phase:** Phase 3 — teacher usefulness (skill gap analysis, exportable reports, teacher guide)
 
 ---
 
