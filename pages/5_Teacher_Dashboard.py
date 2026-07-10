@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from data.teacher_data import STUDENTS, WEEKLY_PROGRESS
+from data.teacher_data import STUDENTS, WEEKLY_PROGRESS, WRITING_SKILL_SAMPLE
 
 st.set_page_config(page_title="Teacher Dashboard", page_icon="📊", layout="wide")
 
@@ -101,3 +101,52 @@ else:
     })
     st.dataframe(struggling_display, use_container_width=True, hide_index=True)
     st.caption(f"{len(struggling)} student(s) may benefit from additional support or intervention.")
+
+st.divider()
+
+# --- Writing Skill Gap Analysis ---
+st.subheader("Writing Skill Gap Analysis")
+st.caption(
+    "Percentage of students demonstrating each SCR writing skill "
+    "based on recent Writing Practice submissions (sample data)."
+)
+
+writing_df = pd.DataFrame(WRITING_SKILL_SAMPLE)
+fig_writing = px.bar(
+    writing_df,
+    x="Skill",
+    y="Students Showing Skill (%)",
+    color="Students Showing Skill (%)",
+    title="Class Writing Skills — Students Showing Evidence of Each Skill",
+    range_y=[0, 100],
+    color_continuous_scale=["#d73027", "#fee08b", "#1a9850"],
+    color_continuous_midpoint=65,
+)
+fig_writing.update_layout(
+    showlegend=False,
+    coloraxis_showscale=False,
+    xaxis_tickangle=-20,
+)
+fig_writing.add_hline(
+    y=70,
+    line_dash="dash",
+    line_color="gray",
+    annotation_text="Target: 70%",
+    annotation_position="top right",
+)
+st.plotly_chart(fig_writing, use_container_width=True)
+
+# Call-out: skills most in need of instruction
+low_skills = writing_df[writing_df["Students Showing Skill (%)"] < 60].sort_values(
+    "Students Showing Skill (%)"
+)
+if not low_skills.empty:
+    st.warning(
+        "**Skills to Prioritize in Mini-Lessons:**\n\n"
+        + "\n".join(
+            f"- **{row['Skill']}** — only {row['Students Showing Skill (%)']}% of students show this skill"
+            for _, row in low_skills.iterrows()
+        )
+    )
+else:
+    st.success("All writing skills are above 60%. Continue reinforcing explanation and connection strategies.")

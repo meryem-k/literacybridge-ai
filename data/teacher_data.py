@@ -18,3 +18,15 @@ WEEKLY_PROGRESS = {
     "Writing":             [58, 62, 66, 70],
     "Revising & Editing":  [55, 60, 64, 68],
 }
+
+WRITING_SKILL_SAMPLE = {
+    "Skill": [
+        "Answering the Prompt",
+        "Citing Evidence",
+        "Explaining Evidence",
+        "Organization",
+        "Sentence Clarity",
+        "Grammar",
+    ],
+    "Students Showing Skill (%)": [74, 55, 42, 49, 60, 65],
+}
