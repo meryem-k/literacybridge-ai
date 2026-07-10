@@ -5,11 +5,9 @@ st.set_page_config(page_title="Writing Practice", page_icon="🖊️")
 
 
 def analyze_writing(text):
-    """Detect which writing skills appear present in the student's response."""
+    """Detect writing skills and grammar/punctuation issues in a student response."""
     text_lower = text.lower().strip()
     word_count = len(text.split())
-
-    # Sentence count (rough split on ending punctuation)
     sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
     sentence_count = len(sentences)
 
@@ -49,18 +47,77 @@ def analyze_writing(text):
 
     # Sentence structure signals
     has_multiple_sentences = sentence_count >= 3
-    starts_capital  = text[0].isupper() if text else False
+    starts_capital = text[0].isupper() if text else False
     ends_with_punct = text[-1] in ".!?" if text else False
 
-    # Rough "answered the prompt" check — prompt keywords present
+    # Prompt answered — keyword check (separate from length so short answers still get credit)
     prompt_keywords = ["elena", "audition", "family", "fear", "courage",
                        "author", "shows", "text", "perform", "memory", "memories"]
     keyword_hits = sum(1 for w in prompt_keywords if w in text_lower)
-    answers_prompt = keyword_hits >= 2 and is_adequate
+    answers_prompt = keyword_hits >= 2
+
+    # ── Grammar and punctuation detection ──────────────────────────────────────
+
+    grammar_issues = []
+
+    # 1. Unnecessary comma after subordinating "that"
+    #    e.g. "shows that, Elena's..." — comma does not belong here
+    if re.search(r"\bthat,\s", text):
+        grammar_issues.append({
+            "label": "Unnecessary Comma After \"that\"",
+            "teach": (
+                "There is a comma after the word \"that\" where one does not belong. "
+                "A comma should not separate \"that\" from the clause it introduces."
+            ),
+            "correct": (
+                "Remove the comma. Write: \"shows that Elena's\" — not \"shows that, Elena's.\""
+            ),
+        })
+
+    # 2. Character name misspelled — "Elen's" instead of "Elena's"
+    if re.search(r"\bElen's\b", text) and not re.search(r"\bElena's\b", text):
+        grammar_issues.append({
+            "label": "Character Name Spelling",
+            "teach": (
+                "The character's name is spelled \"Elena,\" not \"Elen.\" "
+                "Spelling a character's name incorrectly in an SCR is an editing error."
+            ),
+            "correct": "Change \"Elen's\" to \"Elena's\".",
+        })
+
+    # 3. Missing apostrophe in possessive — "Elenas" with no apostrophe
+    if re.search(r"\bElenas\b", text):
+        grammar_issues.append({
+            "label": "Missing Apostrophe in Possessive",
+            "teach": (
+                "\"Elena's\" needs an apostrophe because it shows possession — "
+                "something belongs to Elena. Without the apostrophe, \"Elenas\" looks "
+                "like a plural noun, not a possessive."
+            ),
+            "correct": "Change \"Elenas\" to \"Elena's\".",
+        })
+
+    # 4. Wordiness — "noun + that + pronoun" where "that" can be dropped
+    #    e.g. "memories that she recalls" → "memories she recalls"
+    if re.search(
+        r"\b(memories|details|moments|events|scenes|ideas)\s+that\s+(she|he|they|Elena)\b",
+        text_lower,
+    ):
+        grammar_issues.append({
+            "label": "Wordiness — Remove Extra \"that\"",
+            "teach": (
+                "The word \"that\" before \"she recalls\" (or similar) is not needed. "
+                "Removing it makes your sentence shorter and cleaner without changing the meaning."
+            ),
+            "correct": (
+                "Change \"memories that she recalls\" to \"memories she recalls.\""
+            ),
+        })
 
     return {
         "word_count":             word_count,
         "sentence_count":         sentence_count,
+        "sentences":              sentences,
         "has_evidence":           has_evidence,
         "has_explanation":        has_explanation,
         "has_connection":         has_connection,
@@ -70,7 +127,49 @@ def analyze_writing(text):
         "starts_capital":         starts_capital,
         "ends_with_punct":        ends_with_punct,
         "answers_prompt":         answers_prompt,
+        "grammar_issues":         grammar_issues,
     }
+
+
+def suggest_revision(text, grammar_issues):
+    """
+    Apply detected grammar corrections to the student's first sentence
+    to produce a 'Try revising like this' example.
+    Returns the corrected first sentence, or empty string if no changes needed.
+    """
+    if not text:
+        return ""
+
+    sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
+    first = sentences[0] if sentences else text
+
+    revised = first
+
+    # Apply each detected fix in order
+    for issue in grammar_issues:
+        label = issue["label"]
+        if "Unnecessary Comma" in label:
+            revised = re.sub(r"\bthat,\s", "that ", revised)
+        if "Character Name Spelling" in label:
+            revised = re.sub(r"\bElen's\b", "Elena's", revised)
+        if "Missing Apostrophe" in label:
+            revised = re.sub(r"\bElenas\b", "Elena's", revised)
+        if "Wordiness" in label:
+            revised = re.sub(
+                r"\b(memories|details|moments|events|scenes|ideas)\s+that\s+(she|he|they|Elena)\b",
+                lambda m: f"{m.group(1)} {m.group(2)}",
+                revised,
+                flags=re.IGNORECASE,
+            )
+
+    if revised and revised[-1] not in ".!?":
+        revised += "."
+
+    # Only return if the revision is actually different from the original
+    original_norm = first.rstrip(".!?") + "."
+    if revised == original_norm:
+        return ""
+    return revised
 
 
 # ─── Page Header ─────────────────────────────────────────────────────────────
@@ -93,7 +192,6 @@ st.info(
 # ─── Writing Support Tools ───────────────────────────────────────────────────
 st.subheader("🛠️ Writing Support — Use These Before You Start")
 
-# ACE / RACE framework explanation
 tab_ace, tab_race = st.tabs(["ACE Framework", "RACE Framework"])
 
 with tab_ace:
@@ -125,7 +223,6 @@ with tab_race:
 > Both frameworks work — the key is always the same: **Answer → Evidence → Explanation**.
 """)
 
-# Sentence Stems
 with st.expander("💬 Sentence Stems — Copy and complete these to help you start"):
     col_left, col_right = st.columns(2)
 
@@ -167,7 +264,6 @@ with st.expander("💬 Sentence Stems — Copy and complete these to help you st
             language=None,
         )
 
-# Sample Strong Response
 with st.expander("📄 See a Sample Strong Response — With Labels"):
     st.markdown("""
 > **Prompt:** How does the author show that Elena's connection to her family gives her the courage to perform?
@@ -252,9 +348,8 @@ if st.session_state.writing_submitted:
 
     st.divider()
     st.subheader("📊 Writing Skill Feedback")
-    st.markdown("Here is what your response shows about your writing skills:")
 
-    # --- Skill Tags ---
+    # ── Skill tags (quick overview) ───────────────────────────────────────────
     skills = {
         "Answering the Prompt":  analysis["answers_prompt"],
         "Citing Evidence":       analysis["has_evidence"],
@@ -263,7 +358,6 @@ if st.session_state.writing_submitted:
         "Adequate Length":       analysis["is_adequate"],
         "Sentence Clarity":      analysis["has_multiple_sentences"] and analysis["starts_capital"],
     }
-
     col1, col2, col3 = st.columns(3)
     cols = [col1, col2, col3]
     for i, (skill, present) in enumerate(skills.items()):
@@ -272,79 +366,169 @@ if st.session_state.writing_submitted:
         else:
             cols[i % 3].warning(f"⚠️ {skill}")
 
-    # --- Personalized Recommendations ---
+    # ── Strengths ─────────────────────────────────────────────────────────────
     st.divider()
-    st.subheader("🎯 Personalized Recommendations")
+    strengths = []
 
-    recommendations_given = 0
-
-    if not analysis["is_adequate"]:
-        st.error(
-            f"**📏 Elaboration Practice Needed**\n\n"
-            f"Your response is {analysis['word_count']} word(s). "
-            "A strong SCR is usually 40–80 words — about 4–6 sentences.\n\n"
-            "**Try this:** Go back and add more detail to your explanation. "
-            "Ask yourself: *Why does this evidence matter? What does it tell us about "
-            "the character or the author's message?*"
+    if analysis["answers_prompt"]:
+        strengths.append(
+            "You answered the prompt — your response shows that you understood the question "
+            "and focused on Elena's family connection and courage."
         )
-        recommendations_given += 1
+    if analysis["has_evidence"]:
+        strengths.append("You included text evidence from the passage to support your answer.")
+    if analysis["has_explanation"]:
+        strengths.append("You explained how your evidence connects to the answer.")
+    if analysis["has_connection"]:
+        strengths.append("You connected your response back to the prompt at the end.")
+    if analysis["is_developed"]:
+        strengths.append("Your response is well-developed in length.")
 
-    if not analysis["has_evidence"]:
-        st.warning(
-            "**📌 Citing Evidence Practice Needed**\n\n"
-            "Your response does not appear to include a direct quote or text reference.\n\n"
-            "**Try this:** Find one sentence or phrase in *The Audition* that supports "
-            "your answer. Copy it exactly and put it in quotation marks. "
-            'Use this starter: *For example, the text states, "..."*'
-        )
-        recommendations_given += 1
-
-    if not analysis["has_explanation"]:
-        st.warning(
-            "**🔍 Explaining Evidence Practice Needed**\n\n"
-            "Your response may include evidence but is missing an explanation of what it means.\n\n"
-            "**Try this:** After your quote, add a sentence that starts with one of these:\n"
-            "- *This shows that...*\n"
-            "- *This means that...*\n"
-            "- *This is important because...*\n\n"
-            "Never just drop a quote — always explain what it proves."
-        )
-        recommendations_given += 1
-
-    if not analysis["has_connection"]:
+    if strengths:
+        st.success("**What you did well:**\n\n" + "\n".join(f"- {s}" for s in strengths))
+    elif not analysis["answers_prompt"]:
         st.info(
-            "**🔗 Connecting Back to the Prompt**\n\n"
-            "Try ending your response with a sentence that ties your evidence back "
-            "to the original question.\n\n"
-            "**Try this:** Close your response with one of these:\n"
-            "- *Therefore, the author shows that...*\n"
-            "- *This proves that...*\n"
-            "- *Ultimately,...*"
+            "**Getting started:** Make sure your first sentence directly answers the question. "
+            "Try starting with: *The author shows that Elena's connection to her family...*"
         )
-        recommendations_given += 1
 
-    if not analysis["has_multiple_sentences"]:
-        st.warning(
-            "**📝 Sentence Structure Practice Needed**\n\n"
-            "Your response appears to have fewer than 3 complete sentences. "
-            "A full SCR needs at least 4 sentences — one for each part of ACE.\n\n"
-            "**Try this:** Make sure each sentence ends with a period. "
-            "Write a separate sentence for your Answer, your Evidence, "
-            "your Explanation, and your Connection."
-        )
-        recommendations_given += 1
+    # ── Build priority feedback queue (ACE order, max 2 structure + 1 grammar = 3 total) ──
+    structure_recs = []
 
-    if recommendations_given == 0:
+    # A — Did they answer? (only flag if truly missing)
+    if not analysis["answers_prompt"] and not analysis["has_evidence"] and not analysis["has_explanation"]:
+        structure_recs.append({
+            "label": "📝 A — Answer the Prompt First",
+            "body": (
+                "Your first sentence should directly answer the question. "
+                "Don't make the reader guess what you think.\n\n"
+                "**Try this starter:** *The author shows that Elena's connection to her family "
+                "gives her the courage to perform through...*"
+            ),
+            "next_step": "Write a first sentence that directly answers the question.",
+        })
+
+    # C — Evidence (most critical missing piece when answer is present)
+    if not analysis["has_evidence"]:
+        structure_recs.append({
+            "label": "📌 C — Add Text Evidence",
+            "body": (
+                "Your response answers the question, but it needs a quote or specific detail "
+                "from *The Audition* to prove your point. Without evidence, the reader has to "
+                "take your word for it.\n\n"
+                "**Try this:** Find a line from the passage that shows Elena thinking of her family "
+                "during the audition. Copy it exactly and put it in quotation marks.\n\n"
+                "*Starter: For example, the text states, \"...\"*"
+            ),
+            "next_step": (
+                "Add a direct quote or specific detail from *The Audition* — "
+                "something that shows Elena drawing on her family memory."
+            ),
+        })
+
+    # E — Explanation (only flag if evidence is present but explanation missing)
+    if analysis["has_evidence"] and not analysis["has_explanation"]:
+        structure_recs.append({
+            "label": "🔍 E — Explain Your Evidence",
+            "body": (
+                "You included evidence — that's great. Now explain what it *means*. "
+                "Never just drop a quote and move on. Tell the reader why that quote matters.\n\n"
+                "**Try this:** Right after your quote, add a sentence that starts with:\n"
+                "- *This shows that...*\n"
+                "- *This means that...*\n"
+                "- *This reveals that...*"
+            ),
+            "next_step": (
+                "After your quote, add a sentence explaining what the evidence shows "
+                "about Elena's relationship with her family."
+            ),
+        })
+
+    # Connect back (lower priority — only if other structure pieces are in place)
+    if analysis["has_evidence"] and not analysis["has_connection"]:
+        structure_recs.append({
+            "label": "🔗 Connect Back to the Prompt",
+            "body": (
+                "Try ending your response with a sentence that ties your evidence back "
+                "to the original question. This shows the reader you understand the big picture.\n\n"
+                "**Try this:**\n"
+                "- *Therefore, the author shows that...*\n"
+                "- *This proves that...*\n"
+                "- *Ultimately,...*"
+            ),
+            "next_step": (
+                "Add a closing sentence that connects your evidence back to the idea "
+                "of family giving Elena courage."
+            ),
+        })
+
+    # Elaboration — only flag if the answer is present but response is very short
+    if analysis["answers_prompt"] and not analysis["is_adequate"] and not structure_recs:
+        structure_recs.append({
+            "label": "📏 Develop Your Response Further",
+            "body": (
+                f"Your response is {analysis['word_count']} words. "
+                "A strong SCR is usually 40–80 words — about 4–6 sentences.\n\n"
+                "**Try this:** Go back and add more detail after your evidence. "
+                "Ask yourself: *Why does this moment matter? What does it tell us about Elena?*"
+            ),
+            "next_step": "Expand your explanation — add a sentence about what the evidence reveals.",
+        })
+
+    # Grammar issues — take max 1 to show alongside structure feedback
+    grammar_shown = analysis["grammar_issues"][:1]
+
+    # Combine and cap at 3 total recommendations
+    all_recs = structure_recs[:2] + [
+        {
+            "label": f"✏️ Grammar/Punctuation — {g['label']}",
+            "body": f"**Notice this:** {g['teach']}\n\n**Correction:** {g['correct']}",
+            "next_step": None,
+            "is_grammar": True,
+        }
+        for g in grammar_shown
+    ]
+    shown_recs = all_recs[:3]
+
+    # ── Display recommendations ───────────────────────────────────────────────
+    if shown_recs:
+        st.divider()
+        st.subheader("🎯 Feedback")
+
+        for rec in shown_recs:
+            st.warning(f"**{rec['label']}**\n\n{rec['body']}")
+
+        # Next Best Step — from first structure recommendation
+        first_structure = next((r for r in shown_recs if not r.get("is_grammar")), None)
+        if first_structure and first_structure.get("next_step"):
+            st.info(f"**🚀 Your Next Best Step:** {first_structure['next_step']}")
+
+        # Try Revising Like This — only if grammar issues were detected
+        suggested = suggest_revision(final_text, analysis["grammar_issues"])
+        if suggested:
+            st.divider()
+            st.markdown("**✏️ Try Revising Like This:**")
+            st.markdown(
+                f"> {suggested}\n\n"
+                "*This example shows how to fix the punctuation and wording in your first sentence. "
+                "Use it as a guide — write the revision in your own words.*"
+            )
+
+    else:
+        st.divider()
         st.success(
             "Your response demonstrates strong writing skills across all areas. "
             "Review your skill tags above to see what you did well."
         )
 
-    # --- Their submitted response ---
+    # ── Submitted response ────────────────────────────────────────────────────
     st.divider()
     st.markdown("**Your submitted response:**")
     st.markdown(f"> {final_text}")
-    st.caption(f"Word count: {analysis['word_count']}  |  Sentences detected: {analysis['sentence_count']}")
+    st.caption(
+        f"Word count: {analysis['word_count']}  |  "
+        f"Sentences detected: {analysis['sentence_count']}"
+    )
 
     col_revise, col_new = st.columns(2)
     with col_revise:
