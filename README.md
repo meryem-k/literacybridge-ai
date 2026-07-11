@@ -33,7 +33,7 @@ The current prototype is a working Streamlit web application with five sections:
 | Vocabulary Support | 20 academic vocabulary words organized into two sets, with definitions, example sentences, and study tips |
 | Revising & Editing | Eight grammar and punctuation exercises covering subject-verb agreement, comma splices, apostrophes, verb tense, irrelevant information, thesis writing, capitalization, and pronoun case |
 | Writing Practice | Short-constructed response (SCR) scaffolding using the ACE and RACE frameworks, with sentence stems, a sample labeled response, a student writing text box, and a self-assessment checklist. After submission: strengths-first feedback, personalized recommendations in ACE/RACE order, grammar and punctuation error detection with explanations, a "Next Best Step" prompt, and a "Try Revising Like This" example built from the student's own sentence. |
-| Teacher Dashboard | Sample class overview metrics, skill-area charts, and a student progress table |
+| Teacher Dashboard | Class overview metrics, skill-area charts, weekly progress tracking, and a writing skill gap chart. Includes a Student Writing Skill Analysis section with four views: a color-coded heatmap of all students across six writing skills, a Students Needing Support list sorted by urgency, Small Group Suggestions with mini-lesson guidance, and Individual Student Profiles showing each student's skill-by-skill breakdown and suggested group placement. |
 
 All content is aligned to Texas English I STAAR EOC standards and created by the teacher-developer. No content is copied from commercial test preparation materials.
 
@@ -97,6 +97,12 @@ This is an active prototype under development. It is not yet a production system
 - "Next Best Step" guidance — one clear action for the student to take
 - "Try Revising Like This" support — a corrected example built from the student's own sentence
 - Sample writing skill data added to the Teacher Dashboard for class-level insight
+
+**Teacher Dashboard improvements (between phases):**
+- Color-coded writing skill heatmap showing all students across six skills at a glance
+- Students Needing Support list with priority levels (High / Moderate / Monitor) and specific reteaching recommendations
+- Small Group Suggestions that automatically cluster students by shared writing weaknesses, with suggested mini-lesson topics and frequency
+- Individual Student Profiles with a horizontal bar chart, skill-level summary, and suggested group placement
 
 **Next phase:** Phase 3 — teacher usefulness (skill gap analysis, exportable reports, teacher guide page)
 
