@@ -32,7 +32,7 @@ The current prototype is a working Streamlit web application with five sections:
 | Reading Practice | Three original STAAR-style passages with comprehension questions, skill labels, and answer explanations |
 | Vocabulary Support | 20 academic vocabulary words organized into two sets, with definitions, example sentences, and study tips |
 | Revising & Editing | Eight grammar and punctuation exercises covering subject-verb agreement, comma splices, apostrophes, verb tense, irrelevant information, thesis writing, capitalization, and pronoun case |
-| Writing Practice | Short-constructed response (SCR) scaffolding using the ACE and RACE frameworks, with a self-assessment checklist |
+| Writing Practice | Short-constructed response (SCR) scaffolding using the ACE and RACE frameworks, with sentence stems, a sample labeled response, a student writing text box, and a self-assessment checklist. After submission: strengths-first feedback, personalized recommendations in ACE/RACE order, grammar and punctuation error detection with explanations, a "Next Best Step" prompt, and a "Try Revising Like This" example built from the student's own sentence. |
 | Teacher Dashboard | Sample class overview metrics, skill-area charts, and a student progress table |
 
 All content is aligned to Texas English I STAAR EOC standards and created by the teacher-developer. No content is copied from commercial test preparation materials.
@@ -85,9 +85,20 @@ The app opens in your browser at `http://localhost:8501`.
 
 This is an active prototype under development. It is not yet a production system. Features, content, and design are evolving as the project grows toward its full vision.
 
-**Phase 1 complete:** Content depth (passages, vocabulary, exercises)
-**Phase 2 complete:** Writing practice improvements — ACE/RACE scaffolding, sentence stems, skill feedback, personalized recommendations, teacher writing skill gap chart
-**Next phase:** Phase 3 — teacher usefulness (skill gap analysis, exportable reports, teacher guide)
+**Phase 1 complete:** Content depth — three original STAAR-style passages, 20 academic vocabulary words, eight revising and editing exercises
+
+**Phase 2 complete:** Writing practice improvements, including:
+- ACE/RACE writing framework support with plain-English explanations and sentence stems
+- Student writing text box with live word count
+- Self-assessment checklist before submission
+- Strengths-first feedback that recognizes what the student did well before listing gaps
+- Personalized writing recommendations delivered in ACE/RACE order (Answer → Cite → Explain → Connect)
+- Grammar and punctuation detection with explanations of why each error matters
+- "Next Best Step" guidance — one clear action for the student to take
+- "Try Revising Like This" support — a corrected example built from the student's own sentence
+- Sample writing skill data added to the Teacher Dashboard for class-level insight
+
+**Next phase:** Phase 3 — teacher usefulness (skill gap analysis, exportable reports, teacher guide page)
 
 ---
 
