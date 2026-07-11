@@ -19,6 +19,29 @@ WEEKLY_PROGRESS = {
     "Revising & Editing":  [55, 60, 64, 68],
 }
 
+WRITING_SKILL_LABELS = [
+    "Answering the Prompt",
+    "Citing Evidence",
+    "Explaining Evidence",
+    "Grammar & Sentence Clarity",
+    "Organization",
+    "Connecting Back",
+]
+
+# Per-student scores for each writing skill (sample data, 0–100)
+STUDENT_WRITING_SKILLS = [
+    {"name": "Sofia Martinez",  "Answering the Prompt": 78, "Citing Evidence": 52, "Explaining Evidence": 42, "Grammar & Sentence Clarity": 72, "Organization": 62, "Connecting Back": 40},
+    {"name": "James Johnson",   "Answering the Prompt": 90, "Citing Evidence": 82, "Explaining Evidence": 78, "Grammar & Sentence Clarity": 88, "Organization": 80, "Connecting Back": 75},
+    {"name": "Linh Nguyen",     "Answering the Prompt": 72, "Citing Evidence": 48, "Explaining Evidence": 40, "Grammar & Sentence Clarity": 62, "Organization": 60, "Connecting Back": 45},
+    {"name": "Marco Hernandez", "Answering the Prompt": 58, "Citing Evidence": 40, "Explaining Evidence": 32, "Grammar & Sentence Clarity": 50, "Organization": 44, "Connecting Back": 30},
+    {"name": "Aisha Williams",  "Answering the Prompt": 92, "Citing Evidence": 88, "Explaining Evidence": 85, "Grammar & Sentence Clarity": 90, "Organization": 86, "Connecting Back": 82},
+    {"name": "David Kim",       "Answering the Prompt": 82, "Citing Evidence": 68, "Explaining Evidence": 60, "Grammar & Sentence Clarity": 80, "Organization": 70, "Connecting Back": 46},
+    {"name": "Maria Rodriguez", "Answering the Prompt": 65, "Citing Evidence": 38, "Explaining Evidence": 30, "Grammar & Sentence Clarity": 60, "Organization": 48, "Connecting Back": 28},
+    {"name": "Jamal Thompson",  "Answering the Prompt": 78, "Citing Evidence": 70, "Explaining Evidence": 62, "Grammar & Sentence Clarity": 74, "Organization": 65, "Connecting Back": 52},
+    {"name": "Yuki Tanaka",     "Answering the Prompt": 88, "Citing Evidence": 80, "Explaining Evidence": 75, "Grammar & Sentence Clarity": 84, "Organization": 78, "Connecting Back": 70},
+    {"name": "Carlos Santos",   "Answering the Prompt": 50, "Citing Evidence": 28, "Explaining Evidence": 22, "Grammar & Sentence Clarity": 42, "Organization": 35, "Connecting Back": 20},
+]
+
 WRITING_SKILL_SAMPLE = {
     "Skill": [
         "Answering the Prompt",
