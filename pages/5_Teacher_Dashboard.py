@@ -9,6 +9,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.teacher_data import (
     STUDENTS, WEEKLY_PROGRESS, WRITING_SKILL_SAMPLE,
     WRITING_SKILL_LABELS, STUDENT_WRITING_SKILLS,
+    REVISING_SKILL_LABELS, EDITING_SKILL_LABELS,
+    STUDENT_REVISING_EDITING_SKILLS, REVISING_EDITING_CLASS_SAMPLE,
 )
 
 st.set_page_config(page_title="Teacher Dashboard", page_icon="📊", layout="wide")
@@ -397,3 +399,279 @@ with tab_profiles:
     group = assign_group(student)
     group_icons = {"Intensive Support": "🔴", "Evidence Writing": "🟡", "Connecting Back": "🟡", "On Track": "🟢"}
     st.markdown(f"**Suggested Group:** {group_icons[group]} {group}")
+
+st.divider()
+
+# ── Revising & Editing Skill Analysis ────────────────────────────────────────
+st.subheader("📋 Revising & Editing Skill Analysis")
+st.caption(
+    "Class-level and student-level revising and editing skill data based on sample practice results. "
+    "Proficient = 70% or above. Developing = 50–69%. Needs Support = below 50%."
+)
+
+# Class-level bar chart — all 12 skills, colored by section
+re_df = pd.DataFrame(REVISING_EDITING_CLASS_SAMPLE)
+fig_re = px.bar(
+    re_df,
+    x="Skill",
+    y="Students Showing Skill (%)",
+    color="Section",
+    title="Class Revising & Editing Skills — Students Showing Evidence of Each Skill",
+    range_y=[0, 100],
+    color_discrete_map={"Revising": "#4e9af1", "Editing": "#f1a74e"},
+    barmode="group",
+)
+fig_re.update_layout(xaxis_tickangle=-25, legend_title_text="Section")
+fig_re.add_hline(
+    y=70,
+    line_dash="dash",
+    line_color="gray",
+    annotation_text="Target: 70%",
+    annotation_position="top right",
+)
+st.plotly_chart(fig_re, use_container_width=True)
+
+re_low = re_df[re_df["Students Showing Skill (%)"] < 60].sort_values("Students Showing Skill (%)")
+if not re_low.empty:
+    st.warning(
+        "**Skills to Prioritize in Mini-Lessons:**\n\n"
+        + "\n".join(
+            f"- **{row['Skill']}** ({row['Section']}) — only {row['Students Showing Skill (%)']}% of students show this skill"
+            for _, row in re_low.iterrows()
+        )
+    )
+else:
+    st.success("All revising and editing skills are above 60%.")
+
+st.markdown("---")
+st.markdown("#### Student Revising & Editing Skill Analysis")
+
+ALL_RE_LABELS = REVISING_SKILL_LABELS + EDITING_SKILL_LABELS
+
+re_tab_overview, re_tab_support, re_tab_groups, re_tab_profiles = st.tabs([
+    "Skill Overview",
+    "Students Needing Support",
+    "Small Group Suggestions",
+    "Individual Profiles",
+])
+
+def re_assign_group(student):
+    rev_weak  = sum(1 for s in REVISING_SKILL_LABELS if student[s] < GROUP_THRESHOLD)
+    edit_weak = sum(1 for s in EDITING_SKILL_LABELS  if student[s] < GROUP_THRESHOLD)
+    if rev_weak >= 4 and edit_weak >= 4:
+        return "Intensive Support"
+    elif rev_weak >= 4:
+        return "Revising Focus"
+    elif edit_weak >= 4:
+        return "Editing Focus"
+    return "On Track"
+
+# ── RE Tab 1 — Skill Overview ─────────────────────────────────────────────────
+with re_tab_overview:
+    re_short = [
+        "Claims", "Transitions", "Details", "Repetition", "Combining", "Word Choice",
+        "Fragments", "Run-Ons", "Verb Tense", "SVA", "Capitalization", "Punctuation",
+    ]
+    re_z     = [[s[skill] for skill in ALL_RE_LABELS] for s in STUDENT_REVISING_EDITING_SKILLS]
+    re_names = [s["name"] for s in STUDENT_REVISING_EDITING_SKILLS]
+
+    fig_re_heat = go.Figure(data=go.Heatmap(
+        z=re_z,
+        x=re_short,
+        y=re_names,
+        colorscale=[[0.0, "#d73027"], [0.50, "#fee08b"], [0.70, "#91cf60"], [1.0, "#1a9850"]],
+        zmin=0, zmax=100,
+        text=re_z,
+        texttemplate="%{z}%",
+        textfont={"size": 9},
+    ))
+    fig_re_heat.update_layout(
+        title="Revising & Editing Skill Scores — All Students",
+        height=410,
+        margin=dict(l=160, t=50),
+        xaxis_title="Skill",
+        yaxis_title="Student",
+    )
+    st.plotly_chart(fig_re_heat, use_container_width=True)
+    st.caption("🟢 Green = Proficient (70%+)   🟡 Yellow = Developing (50–69%)   🔴 Red = Needs Support (<50%)   |   Left 6 = Revising · Right 6 = Editing")
+
+    st.markdown("---")
+    selected_re_skill = st.selectbox("View students by proficiency level for:", ALL_RE_LABELS, key="re_skill_select")
+    re_proficient = [s["name"] for s in STUDENT_REVISING_EDITING_SKILLS if s[selected_re_skill] >= PROFICIENT]
+    re_developing = [s["name"] for s in STUDENT_REVISING_EDITING_SKILLS if DEVELOPING <= s[selected_re_skill] < PROFICIENT]
+    re_needs      = [s["name"] for s in STUDENT_REVISING_EDITING_SKILLS if s[selected_re_skill] < DEVELOPING]
+
+    rec1, rec2, rec3 = st.columns(3)
+    with rec1:
+        st.success(f"**✅ Proficient ({len(re_proficient)})**")
+        for name in re_proficient:
+            st.markdown(f"- {name}")
+    with rec2:
+        st.warning(f"**📈 Developing ({len(re_developing)})**")
+        for name in re_developing:
+            st.markdown(f"- {name}")
+    with rec3:
+        st.error(f"**⚠️ Needs Support ({len(re_needs)})**")
+        for name in re_needs:
+            st.markdown(f"- {name}")
+
+# ── RE Tab 2 — Students Needing Support ───────────────────────────────────────
+with re_tab_support:
+    st.markdown(
+        "Students listed below have at least one revising or editing skill below 70%. "
+        "Priority is based on how many skills are below the developing threshold (50%)."
+    )
+    re_support_rows = []
+    for s in STUDENT_REVISING_EDITING_SKILLS:
+        below_p = [skill for skill in ALL_RE_LABELS if s[skill] < PROFICIENT]
+        below_d = [skill for skill in ALL_RE_LABELS if s[skill] < DEVELOPING]
+        if below_p:
+            re_support_rows.append({
+                "Student":            s["name"],
+                "Skills Below 70%":   len(below_p),
+                "Skills Below 50%":   len(below_d),
+                "Most Critical Needs": ", ".join(below_d) if below_d else "—",
+            })
+
+    re_support_rows.sort(key=lambda r: (-r["Skills Below 50%"], -r["Skills Below 70%"]))
+
+    for row in re_support_rows:
+        if row["Skills Below 50%"] >= 6:
+            priority_label = "🔴 High Priority"
+        elif row["Skills Below 50%"] >= 3:
+            priority_label = "🟡 Moderate Priority"
+        else:
+            priority_label = "🟢 Monitor"
+
+        with st.expander(f"{priority_label} — {row['Student']}"):
+            col_a, col_b = st.columns(2)
+            col_a.metric("Skills Not Yet Proficient", row["Skills Below 70%"])
+            col_b.metric("Skills Needing Reteaching", row["Skills Below 50%"])
+            if row["Most Critical Needs"] != "—":
+                st.warning(f"**Reteach immediately:** {row['Most Critical Needs']}")
+            developing_list = [
+                skill for skill in ALL_RE_LABELS
+                if DEVELOPING <= next(s[skill] for s in STUDENT_REVISING_EDITING_SKILLS if s["name"] == row["Student"]) < PROFICIENT
+            ]
+            if developing_list:
+                st.info(f"**Continue developing:** {', '.join(developing_list)}")
+
+    if not re_support_rows:
+        st.success("All students are proficient in all revising and editing skills.")
+
+# ── RE Tab 3 — Small Group Suggestions ────────────────────────────────────────
+with re_tab_groups:
+    st.markdown(
+        "Students with shared revising and editing weaknesses are grouped below. "
+        "Each group suggests a targeted mini-lesson focus."
+    )
+
+    re_group_members = {
+        "Intensive Support": [],
+        "Revising Focus":    [],
+        "Editing Focus":     [],
+        "On Track":          [],
+    }
+    for s in STUDENT_REVISING_EDITING_SKILLS:
+        re_group_members[re_assign_group(s)].append(s["name"])
+
+    re_group_info = {
+        "Intensive Support": {
+            "icon":      "🔴",
+            "focus":     "Both revising and editing — all skill areas need development",
+            "lesson":    "Begin with one skill at a time. Start with sentence fragments and claim writing — foundational skills that unlock other improvements. Use sentence-level practice before paragraph-level.",
+            "frequency": "Daily or near-daily small-group sessions recommended.",
+        },
+        "Revising Focus": {
+            "icon":      "🟡",
+            "focus":     "Revising skills — claim strength, transitions, detail, word choice",
+            "lesson":    "Focus on the difference between a fact and an argument. Practice adding supporting details with the prompt: 'How do you know?' Work on transition words by sorting them into categories (contrast, cause-effect, addition).",
+            "frequency": "2–3 times per week for 15–20 minutes.",
+        },
+        "Editing Focus": {
+            "icon":      "🟡",
+            "focus":     "Editing skills — grammar, punctuation, verb tense, sentence structure",
+            "lesson":    "Use sentence-level editing practice. Start with fragments and run-ons, then move to subject-verb agreement. A short daily editing warm-up (one sentence on the board) builds automaticity quickly.",
+            "frequency": "2–3 times per week; daily editing warm-ups are especially effective.",
+        },
+        "On Track": {
+            "icon":      "🟢",
+            "focus":     "Enrichment — more complex texts and advanced sentence structures",
+            "lesson":    "These students can work on combining multiple revising and editing skills in a single paragraph. Peer editing with structured feedback forms is a strong extension activity.",
+            "frequency": "Peer mentoring or independent enrichment tasks.",
+        },
+    }
+
+    for group_name, info in re_group_info.items():
+        members = re_group_members[group_name]
+        if not members:
+            continue
+        with st.expander(f"{info['icon']} **{group_name}** — {len(members)} student(s)"):
+            st.markdown(f"**Students:** {', '.join(members)}")
+            st.markdown(f"**Mini-lesson focus:** {info['focus']}")
+            st.info(f"**Suggested activity:** {info['lesson']}")
+            st.caption(f"Suggested frequency: {info['frequency']}")
+
+# ── RE Tab 4 — Individual Profiles ────────────────────────────────────────────
+with re_tab_profiles:
+    re_student_names = [s["name"] for s in STUDENT_REVISING_EDITING_SKILLS]
+    re_selected      = st.selectbox("Choose a student to view:", re_student_names, key="re_profile_select")
+    re_student       = next(s for s in STUDENT_REVISING_EDITING_SKILLS if s["name"] == re_selected)
+
+    re_scores = [re_student[skill] for skill in ALL_RE_LABELS]
+    re_colors = [
+        "#1a9850" if sc >= PROFICIENT else "#fee08b" if sc >= DEVELOPING else "#d73027"
+        for sc in re_scores
+    ]
+    re_section_labels = (
+        [f"[R] {s}" for s in REVISING_SKILL_LABELS] +
+        [f"[E] {s}" for s in EDITING_SKILL_LABELS]
+    )
+
+    fig_re_profile = go.Figure(go.Bar(
+        x=re_scores,
+        y=re_section_labels,
+        orientation="h",
+        marker_color=re_colors,
+        text=[f"{sc}%" for sc in re_scores],
+        textposition="outside",
+    ))
+    fig_re_profile.update_layout(
+        title=f"Revising & Editing Skill Profile — {re_selected}",
+        xaxis=dict(range=[0, 115], title="Score (%)"),
+        height=420,
+        margin=dict(l=200),
+    )
+    fig_re_profile.add_vline(
+        x=70, line_dash="dash", line_color="gray",
+        annotation_text="Proficient (70%)", annotation_position="top right",
+    )
+    st.plotly_chart(fig_re_profile, use_container_width=True)
+    st.caption("[R] = Revising skill · [E] = Editing skill")
+
+    re_strengths  = [skill for skill in ALL_RE_LABELS if re_student[skill] >= PROFICIENT]
+    re_developing = [skill for skill in ALL_RE_LABELS if DEVELOPING <= re_student[skill] < PROFICIENT]
+    re_reteach    = [skill for skill in ALL_RE_LABELS if re_student[skill] < DEVELOPING]
+
+    col_s, col_d, col_r = st.columns(3)
+    with col_s:
+        st.success(f"**✅ Proficient ({len(re_strengths)})**")
+        for skill in re_strengths:
+            st.markdown(f"- {skill}")
+    with col_d:
+        st.warning(f"**📈 Developing ({len(re_developing)})**")
+        for skill in re_developing:
+            st.markdown(f"- {skill}")
+    with col_r:
+        st.error(f"**⚠️ Needs Reteaching ({len(re_reteach)})**")
+        for skill in re_reteach:
+            st.markdown(f"- {skill}")
+
+    re_group = re_assign_group(re_student)
+    re_group_icons = {
+        "Intensive Support": "🔴",
+        "Revising Focus":    "🟡",
+        "Editing Focus":     "🟡",
+        "On Track":          "🟢",
+    }
+    st.markdown(f"**Suggested Group:** {re_group_icons[re_group]} {re_group}")
