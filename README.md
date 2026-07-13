@@ -104,7 +104,18 @@ This is an active prototype under development. It is not yet a production system
 - Small Group Suggestions that automatically cluster students by shared writing weaknesses, with suggested mini-lesson topics and frequency
 - Individual Student Profiles with a horizontal bar chart, skill-level summary, and suggested group placement
 
-**Next phase:** Phase 3 — teacher usefulness (skill gap analysis, exportable reports, teacher guide page)
+**Phase 3 complete:** Revising and Editing Practice improvements, including:
+- Separated Revising Practice and Editing Practice into two independent sections
+- Six original STAAR-aligned Revising questions covering claims, transitions, supporting details, removing repetition, combining sentences, and word choice
+- Six original STAAR-aligned Editing questions covering sentence fragments, run-on sentences, verb tense, subject-verb agreement, capitalization, and punctuation
+- Student-friendly mini-lessons before each question explaining the skill rule in plain language
+- Skill tags and TEKS-related labels on every question showing the standard being practiced and the difficulty level
+- Answer feedback and explanations after submission showing correct answers and why each answer is right or wrong
+- Skill breakdown after submission listing only the skills the student missed
+- Personalized recommendations for each missed skill with specific, actionable practice advice
+- Teacher Dashboard Revising and Editing Skill Gap Data — class-level bar chart, student skill heatmap, Students Needing Support list, Small Group Suggestions, and Individual Student Profiles
+
+**Next phase:** Phase 4 — mission and polish (About page, TEKS alignment labels, visual design)
 
 ---
 
